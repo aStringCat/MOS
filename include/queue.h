@@ -100,7 +100,7 @@
 #define LIST_INIT(head)                                                                            \
 	do {                                                                                       \
 		LIST_FIRST((head)) = NULL;                                                         \
-	} while (0)
+	} while (0) 
 
 /*
  * Insert the element 'elm' *after* 'listelm' which is already in the list. The 'field'

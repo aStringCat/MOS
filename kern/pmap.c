@@ -27,16 +27,18 @@ void mips_detect_memory(u_int _memsize) {
 	/* Step 2: Calculate the corresponding 'npage' value. */
 	/* Exercise 2.1: Your code here. */
 
+	npage = memsize / PAGE_SIZE;
+
 	printk("Memory size: %lu KiB, number of pages: %lu\n", memsize / 1024, npage);
 }
 
 /* Lab 2 Key Code "alloc" */
 /* Overview:
-    Allocate `n` bytes physical memory with alignment `align`, if `clear` is set, clear the
-    allocated memory.
-    This allocator is used only while setting up virtual memory system.
+	Allocate `n` bytes physical memory with alignment `align`, if `clear` is set, clear the
+	allocated memory.
+	This allocator is used only while setting up virtual memory system.
    Post-Condition:
-    If we're out of memory, should panic, else return this address of memory we have allocated.*/
+	If we're out of memory, should panic, else return this address of memory we have allocated.*/
 void *alloc(u_int n, u_int align, int clear) {
 	extern char end[];
 	u_long alloced_mem;
@@ -70,9 +72,9 @@ void *alloc(u_int n, u_int align, int clear) {
 /* End of Key Code "alloc" */
 
 /* Overview:
-    Set up two-level page table.
+	Set up two-level page table.
    Hint:
-    You can get more details about `UPAGES` and `UENVS` in include/mmu.h. */
+	You can get more details about `UPAGES` and `UENVS` in include/mmu.h. */
 void mips_vm_init() {
 	/* Allocate proper size of physical memory for global array `pages`,
 	 * for physical memory management. Then, map virtual address `UPAGES` to
@@ -94,14 +96,29 @@ void page_init(void) {
 	/* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
 	/* Exercise 2.3: Your code here. (1/4) */
 
+	LIST_INIT(&page_free_list);
+
 	/* Step 2: Align `freemem` up to multiple of PAGE_SIZE. */
 	/* Exercise 2.3: Your code here. (2/4) */
+
+	freemem = ROUND(freemem, PAGE_SIZE);
 
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
 	/* Exercise 2.3: Your code here. (3/4) */
 
+	u_long usedpage = PPN(PADDR(freemem));
+
+	for (u_long i = 0; i < usedpage; i++) {
+		pages[i].pp_ref = 1;
+	}
+
 	/* Step 4: Mark the other memory as free. */
 	/* Exercise 2.3: Your code here. (4/4) */
+
+	for (u_long i = usedpage; i < npage; i++) {
+		pages[i].pp_ref = 0;
+		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
+	}
 
 }
 
@@ -123,11 +140,19 @@ int page_alloc(struct Page **new) {
 	struct Page *pp;
 	/* Exercise 2.4: Your code here. (1/2) */
 
+	if (LIST_EMPTY(&page_free_list)) {
+		return -E_NO_MEM;
+	} else {
+		pp = LIST_FIRST(&page_free_list);
+	}
+
 	LIST_REMOVE(pp, pp_link);
 
 	/* Step 2: Initialize this page with zero.
 	 * Hint: use `memset`. */
 	/* Exercise 2.4: Your code here. (2/2) */
+
+	memset((void *)page2kva(pp), 0, PAGE_SIZE);
 
 	*new = pp;
 	return 0;
@@ -143,6 +168,8 @@ void page_free(struct Page *pp) {
 	assert(pp->pp_ref == 0);
 	/* Just insert it into 'page_free_list'. */
 	/* Exercise 2.5: Your code here. */
+
+	LIST_INSERT_HEAD(&page_free_list, pp, pp_link);
 
 }
 
@@ -170,6 +197,8 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	/* Step 1: Get the corresponding page directory entry. */
 	/* Exercise 2.6: Your code here. (1/3) */
 
+	pgdir_entryp = pgdir + PDA(va);
+
 	/* Step 2: If the corresponding page table is not existent (valid) then:
 	 *   * If parameter `create` is set, create one. Set the permission bits 'PTE_C_CACHEABLE |
 	 *     PTE_V' for this new page in the page directory. If failed to allocate a new page (out
@@ -178,8 +207,22 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	 */
 	/* Exercise 2.6: Your code here. (2/3) */
 
+	if ((*pgdir_entryp & PTE_V) == 0) {
+		if (create) {
+			if (page_alloc(&pp) == -E_NO_MEM)
+				return -E_NO_MEM;
+			*pgdir_entryp = (page2pa(pp)) | PTE_C_CACHEABLE | PTE_V;
+			pp->pp_ref++;
+		} else {
+			*ppte = NULL;
+			return 0;
+		}
+	}
+
 	/* Step 3: Assign the kernel virtual address of the page table entry to '*ppte'. */
 	/* Exercise 2.6: Your code here. (3/3) */
+
+	*ppte = (Pte *)va2pa(pgdir_entryp, va);
 
 	return 0;
 }
@@ -215,23 +258,31 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	/* Step 2: Flush TLB with 'tlb_invalidate'. */
 	/* Exercise 2.7: Your code here. (1/3) */
 
+	tlb_invalidate(asid, va);
+
 	/* Step 3: Re-get or create the page table entry. */
 	/* If failed to create, return the error. */
 	/* Exercise 2.7: Your code here. (2/3) */
 
+	if (pgdir_walk(pgdir, va, 1, &pte) == -E_NO_MEM)
+		return -E_NO_MEM;
+
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_C_CACHEABLE | PTE_V'
 	 * and increase its 'pp_ref'. */
 	/* Exercise 2.7: Your code here. (3/3) */
+
+	*pte = (page2pa(pp)) | perm | PTE_C_CACHEABLE | PTE_V;
+	pp->pp_ref++;
 
 	return 0;
 }
 
 /* Lab 2 Key Code "page_lookup" */
 /*Overview:
-    Look up the Page that virtual address `va` map to.
+	Look up the Page that virtual address `va` map to.
   Post-Condition:
-    Return a pointer to corresponding Page, and store it's page table entry to *ppte.
-    If `va` doesn't mapped to any Page, return NULL.*/
+	Return a pointer to corresponding Page, and store it's page table entry to *ppte.
+	If `va` doesn't mapped to any Page, return NULL.*/
 struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 	struct Page *pp;
 	Pte *pte;
@@ -347,7 +398,7 @@ void physical_memory_manage_check(void) {
 		// printk("0x%x  0x%x\n",&test_pages[i], test_pages[i].pp_link.le_next);
 	}
 	p = LIST_FIRST(&test_free);
-	int answer1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+	int answer1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	assert(p != NULL);
 	while (p != NULL) {
 		// printk("%d %d\n",p->pp_ref,answer1[j]);
@@ -356,7 +407,7 @@ void physical_memory_manage_check(void) {
 		p = LIST_NEXT(p, pp_link);
 	}
 	// insert_after test
-	int answer2[] = {0, 1, 2, 3, 4, 20, 5, 6, 7, 8, 9};
+	int answer2[] = { 0, 1, 2, 3, 4, 20, 5, 6, 7, 8, 9 };
 	q = (struct Page *)alloc(sizeof(struct Page), PAGE_SIZE, 1);
 	q->pp_ref = 20;
 
