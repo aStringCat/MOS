@@ -27,7 +27,7 @@ void mips_detect_memory(u_int _memsize) {
 	/* Step 2: Calculate the corresponding 'npage' value. */
 	/* Exercise 2.1: Your code here. */
 
-	npage = memsize / PAGE_SIZE;
+	npage = memsize >> PGSHIFT;
 
 	printk("Memory size: %lu KiB, number of pages: %lu\n", memsize / 1024, npage);
 }
@@ -140,10 +140,9 @@ int page_alloc(struct Page **new) {
 	struct Page *pp;
 	/* Exercise 2.4: Your code here. (1/2) */
 
-	if (LIST_EMPTY(&page_free_list)) {
+	pp = LIST_FIRST(&page_free_list);
+	if (pp == NULL) {
 		return -E_NO_MEM;
-	} else {
-		pp = LIST_FIRST(&page_free_list);
 	}
 
 	LIST_REMOVE(pp, pp_link);
