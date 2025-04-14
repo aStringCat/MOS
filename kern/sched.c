@@ -47,4 +47,6 @@ void schedule(int yield) {
 		}
 		count = e->env_pri;
 	}
+	count--;
+	env_run(e);
 }
