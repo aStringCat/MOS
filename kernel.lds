@@ -16,7 +16,7 @@ SECTIONS {
 		*(.text.tlb_miss_entry)
 	}
 	
-	.= 0x80000180;
+	. = 0x80000180;
 	.exc_gen_entry : {
 		*(.text.exc_gen_entry)
 	}

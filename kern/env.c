@@ -245,7 +245,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
 	/* Exercise 3.4: Your code here. (2/4) */
 
-	if (r = env_setup_vm(e) != 0) {
+	if ((r = env_setup_vm(e)) != 0) {
 		return r;
 	}
 
@@ -311,7 +311,7 @@ static int load_icode_mapper(void *data, u_long va, size_t offset, u_int perm, c
 	/* Step 1: Allocate a page with 'page_alloc'. */
 	/* Exercise 3.5: Your code here. (1/2) */
 
-	if (r = page_alloc(&p) != 0) {
+	if ((r = page_alloc(&p)) != 0) {
 		return r;
 	}
 

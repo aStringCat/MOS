@@ -43,7 +43,7 @@ void schedule(int yield) {
 		}
 		e = TAILQ_FIRST(&env_sched_list);
 		if (e == NULL) {
-			panic("schedule: no runnable envs\n")
+			panic("schedule: no runnable envs\n");
 		}
 		count = e->env_pri;
 	}
