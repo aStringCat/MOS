@@ -147,7 +147,7 @@ void env_init(void) {
 	/* Exercise 3.1: Your code here. (1/2) */
 
 	LIST_INIT(&env_free_list);
-	LAILQ_INIT(&env_sched_list);
+	TAILQ_INIT(&env_sched_list);
 
 	/* Step 2: Traverse the elements of 'envs' array, set their status to 'ENV_FREE' and insert
 	 * them into the 'env_free_list'. Make sure, after the insertion, the order of envs in the
@@ -237,13 +237,13 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	/* Step 1: Get a free Env from 'env_free_list' */
 	/* Exercise 3.4: Your code here. (1/4) */
 
-	e = LIST_FIRST(&env_free_list)
-		if (e == NULL) {
-			return -E_NO_FREE_ENV;
-		}
+	e = LIST_FIRST(&env_free_list);
+	if (e == NULL) {
+		return -E_NO_FREE_ENV;
+	}
 
-		/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
-		/* Exercise 3.4: Your code here. (2/4) */
+	/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
+	/* Exercise 3.4: Your code here. (2/4) */
 
 	if (r = env_setup_vm(e) != 0) {
 		return r;
