@@ -96,11 +96,11 @@ static void duppage(u_int envid, u_int vpn) {
 			user_panic("user panic mem map error: %d", r);
 		}
 	} else {
-		if ((r = syscall_mem_map(0, (void *)addr, 0, (void *)addr, (perm & ~PTE_D) | PTE_COW)) < 0) {
-		       	user_panic("user panic mem map error: %d", r);
-		}
 		if ((r = syscall_mem_map(0, (void *)addr, envid, (void *)addr, (perm & ~PTE_D) | PTE_COW)) < 0) {
 			user_panic("user panic mem map error: %d", r);
+		}
+		if ((r = syscall_mem_map(0, (void *)addr, 0, (void *)addr, (perm & ~PTE_D) | PTE_COW)) < 0) {
+		       	user_panic("user panic mem map error: %d", r);
 		}
 	}
 
