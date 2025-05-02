@@ -200,7 +200,7 @@ int sys_mem_map(u_int srcid, u_int srcva, u_int dstid, u_int dstva, u_int perm) 
 
 	pp = page_lookup(srcenv->env_pgdir, srcva, NULL);
 	if (pp == NULL) {
-		return -E_INVA;
+		return -E_INVAL;
 	}
 
 	/* Step 5: Map the physical page at 'dstva' in the address space of 'dstid'. */
@@ -223,13 +223,13 @@ int sys_mem_unmap(u_int envid, u_int va) {
 	/* Step 1: Check if 'va' is a legal user virtual address using 'is_illegal_va'. */
 	/* Exercise 4.6: Your code here. (1/2) */
 
-	if (is_illegal_va(va) {
+	if (is_illegal_va(va)) {
 		return -E_INVAL;
 	}
 	/* Step 2: Convert the envid to its corresponding 'struct Env *' using 'envid2env'. */
 	/* Exercise 4.6: Your code here. (2/2) */
 
-	try(envid2env(envid, &e, 1);
+	try(envid2env(envid, &e, 1));
 	/* Step 3: Unmap the physical page at 'va' in the address space of 'envid'. */
 	page_remove(e->env_pgdir, e->env_asid, va);
 	return 0;
@@ -529,7 +529,7 @@ void do_syscall(struct Trapframe *tf) {
 
 	/* Step 2: Use 'sysno' to get 'func' from 'syscall_table'. */
 	/* Exercise 4.2: Your code here. (2/4) */
-	func = syscal_table[sysno];
+	func = syscall_table[sysno];
 
 	/* Step 3: First 3 args are stored in $a1, $a2, $a3. */
 	u_int arg1 = tf->regs[5];
@@ -545,6 +545,6 @@ void do_syscall(struct Trapframe *tf) {
 	/* Step 5: Invoke 'func' with retrieved arguments and store its return value to $v0 in 'tf'.
 	 */
 	/* Exercise 4.2: Your code here. (4/4) */
-	tf->rags[2] = func(arg1, arg2, arg3, arg4, arg5);
+	tf->regs[2] = func(arg1, arg2, arg3, arg4, arg5);
 
 }
