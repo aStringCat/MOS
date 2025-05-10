@@ -144,7 +144,7 @@ void flush_bitmap() {
 	// update bitmap, mark all bit where corresponding block is used.
 	for (i = 0; i < nextbno; ++i) {
 		((uint32_t *)disk[2 + i / BLOCK_SIZE_BIT].data)[(i % BLOCK_SIZE_BIT) / 32] &=
-		    ~(1 << (i % 32));
+			~(1 << (i % 32));
 	}
 }
 
@@ -216,6 +216,13 @@ struct File *create_file(struct File *dirf) {
 		// the 'bno' at the index.
 		/* Exercise 5.5: Your code here. (1/3) */
 
+		if (i < NDIRECT) {
+			bno = dirf->f_direct[i];
+		} else {
+			bno = ((int *)(disk[dirf->f_indirect].data))[i];
+		}
+
+
 		// Get the directory block using the block number.
 		struct File *blk = (struct File *)(disk[bno].data);
 
@@ -225,12 +232,18 @@ struct File *create_file(struct File *dirf) {
 			// Return a pointer to the unused 'File'.
 			/* Exercise 5.5: Your code here. (2/3) */
 
+			if (f->f_name[0] == '\0') {
+				return f;
+			}
 		}
 	}
 
 	// Step 2: If no unused file is found, allocate a new block using 'make_link_block' function
 	// and return a pointer to the new block on 'disk'.
 	/* Exercise 5.5: Your code here. (3/3) */
+
+	int bno = make_link_block(dirf, nblk);
+	return (struct File *)(disk[bno].data);
 
 	return NULL;
 }
