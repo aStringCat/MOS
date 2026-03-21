@@ -48,6 +48,10 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 
 	// lab3:
 	// env_init();
+	mips_detect_memory(ram_low_size);
+	mips_vm_init();
+	page_init();
+	env_init();
 
 	// lab3:
 	// ENV_CREATE_PRIORITY(user_bare_loop, 1);
@@ -68,6 +72,9 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 
 	// lab3:
 	// schedule(0);
+	ENV_CREATE(user_icode);
+	ENV_CREATE(fs_serv);
+	schedule(0);
 	halt();
 }
 

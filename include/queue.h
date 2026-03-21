@@ -55,8 +55,7 @@
  * Set a list head variable to LIST_HEAD_INITIALIZER(head)
  * to reset it to the empty list.
  */
-#define LIST_HEAD_INITIALIZER(head)                                                                \
-	{ NULL }
+#define LIST_HEAD_INITIALIZER(head) {NULL}
 
 /*
  * Use this inside a structure "LIST_ENTRY(type) field" to use
@@ -100,8 +99,9 @@
 #define LIST_INIT(head)                                                                            \
 	do {                                                                                       \
 		LIST_FIRST((head)) = NULL;                                                         \
-	} while (0) 
+	} while (0)
 
+/* ----- MOS EXERCISE 2 queue-macro AFTER detect-mem BEGIN ----- */
 /*
  * Insert the element 'elm' *after* 'listelm' which is already in the list. The 'field'
  * name is the link element as above.
@@ -113,13 +113,17 @@
  * Step 4: assign 'elm.pre' from a proper value.
  */
 #define LIST_INSERT_AFTER(listelm, elm, field)                                                     \
-	/* Exercise 2.2: Your code here. */  \
-	do {                                                                                  \
-		if ((LIST_NEXT((elm), field) = LIST_NEXT((listelm), field)) != NULL)              \
-			LIST_NEXT((listelm), field)->field.le_prev = &LIST_NEXT((elm), field);        \
-		LIST_NEXT((listelm), field) = (elm);                                              \
-		(elm)->field.le_prev = &LIST_NEXT((listelm), field);                              \
+	/* ----- MOS BLANK BEGIN ----- */                                                          \
+	do {                                                                                       \
+		(LIST_NEXT((elm), field)) = (LIST_NEXT((listelm), field));                         \
+		if ((LIST_NEXT((listelm), field)) != NULL) {                                       \
+			LIST_NEXT((listelm), field)->field.le_prev = &(LIST_NEXT((elm), field));   \
+		}                                                                                  \
+		LIST_NEXT((listelm), field) = (elm);                                               \
+		(elm)->field.le_prev = &((LIST_NEXT((listelm), field)));                           \
 	} while (0)
+/* ----- MOS BLANK END ----- */
+/* ----- MOS EXERCISE END ----- */
 
 /*
  * Insert the element "elm" *before* the element "listelm" which is
@@ -164,18 +168,17 @@
  */
 #define _TAILQ_HEAD(name, type, qual)                                                              \
 	struct name {                                                                              \
-		qual type *tqh_first;	   /* first element */                                     \
-		qual type *qual *tqh_last; /* addr of last next element */                         \
+		qual type *tqh_first;	     /* first element */                                   \
+		qual type * qual * tqh_last; /* addr of last next element */                       \
 	}
 #define TAILQ_HEAD(name, type) _TAILQ_HEAD(name, struct type, )
 
-#define TAILQ_HEAD_INITIALIZER(head)                                                               \
-	{ NULL, &(head).tqh_first }
+#define TAILQ_HEAD_INITIALIZER(head) {NULL, &(head).tqh_first}
 
 #define _TAILQ_ENTRY(type, qual)                                                                   \
 	struct {                                                                                   \
-		qual type *tqe_next;	   /* next element */                                      \
-		qual type *qual *tqe_prev; /* address of previous next element */                  \
+		qual type *tqe_next;	     /* next element */                                    \
+		qual type * qual * tqe_prev; /* address of previous next element */                \
 	}
 #define TAILQ_ENTRY(type) _TAILQ_ENTRY(struct type, )
 

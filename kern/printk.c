@@ -2,22 +2,22 @@
 #include <printk.h>
 #include <trap.h>
 
-/* Lab 1 Key Code "outputk" */
+/* ----- MOS KEY-CODE 1 outputk AFTER vprintfmt-overview BEGIN ----- */
 void outputk(void *data, const char *buf, size_t len) {
 	for (int i = 0; i < len; i++) {
 		printcharc(buf[i]);
 	}
 }
-/* End of Key Code "outputk" */
+/* ----- MOS KEY-CODE END ----- */
 
-/* Lab 1 Key Code "printk" */
+/* ----- MOS KEY-CODE 1 printk AFTER enter-kernel BEGIN ----- */
 void printk(const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	vprintfmt(outputk, NULL, fmt, ap);
 	va_end(ap);
 }
-/* End of Key Code "printk" */
+/* ----- MOS KEY-CODE END ----- */
 
 void print_tf(struct Trapframe *tf) {
 	for (int i = 0; i < sizeof(tf->regs) / sizeof(tf->regs[0]); i++) {

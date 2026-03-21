@@ -6,8 +6,9 @@
 #define TIMER_INTERVAL (500000) // WARNING: DO NOT MODIFY THIS LINE!
 
 // clang-format off
+/* ----- MOS EXERCISE 3 reset-kclock-macro AFTER exc-entry-lds BEGIN ----- */
 .macro RESET_KCLOCK
-	li		t0, TIMER_INTERVAL
+	li 	t0, TIMER_INTERVAL
 	/*
 	 * Hint:
 	 *   Use 'mtc0' to write an appropriate value into the CP0_COUNT and CP0_COMPARE registers.
@@ -16,11 +17,9 @@
 	 *   CP0_COMPARE registers are equal, the timer interrupt will be triggered.
 	 *
 	 */
-	/* Exercise 3.11: Your code here. */
-	
-	mtc0 	zero, CP0_COUNT
-	mtc0	t0, CP0_COMPARE
-
-.endm
+		mtc0	zero, CP0_COUNT
+	mtc0 	t0, CP0_COMPARE
+	.endm
+/* ----- MOS EXERCISE END ----- */
 // clang-format on
 #endif

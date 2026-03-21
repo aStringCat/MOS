@@ -14,7 +14,7 @@
 #include "../user/include/fs.h"
 
 /* Static assert, for compile-time assertion checking */
-#define static_assert(c) (void)(char(*)[(c) ? 1 : -1])0
+#define static_assert(c) (void)(char (*)[(c) ? 1 : -1])0
 
 #define nelem(x) (sizeof(x) / sizeof((x)[0]))
 typedef struct Super Super;
@@ -144,7 +144,7 @@ void flush_bitmap() {
 	// update bitmap, mark all bit where corresponding block is used.
 	for (i = 0; i < nextbno; ++i) {
 		((uint32_t *)disk[2 + i / BLOCK_SIZE_BIT].data)[(i % BLOCK_SIZE_BIT) / 32] &=
-			~(1 << (i % 32));
+		    ~(1 << (i % 32));
 	}
 }
 
@@ -205,6 +205,7 @@ int make_link_block(struct File *dirf, int nblk) {
 // Hint:
 //  Use 'make_link_block' to allocate a new block for the directory if there are no existing unused
 //  'File's.
+/* ----- MOS EXERCISE 5 create-file AFTER free-block BEGIN ----- */
 struct File *create_file(struct File *dirf) {
 	int nblk = dirf->f_size / BLOCK_SIZE;
 
@@ -214,14 +215,11 @@ struct File *create_file(struct File *dirf) {
 		// If the block number is in the range of direct pointers (NDIRECT), get the 'bno'
 		// directly from 'f_direct'. Otherwise, access the indirect block on 'disk' and get
 		// the 'bno' at the index.
-		/* Exercise 5.5: Your code here. (1/3) */
-
 		if (i < NDIRECT) {
 			bno = dirf->f_direct[i];
 		} else {
 			bno = ((int *)(disk[dirf->f_indirect].data))[i];
 		}
-
 
 		// Get the directory block using the block number.
 		struct File *blk = (struct File *)(disk[bno].data);
@@ -230,8 +228,6 @@ struct File *create_file(struct File *dirf) {
 		for (struct File *f = blk; f < blk + FILE2BLK; ++f) {
 			// If the first byte of the file name is null, the 'File' is unused.
 			// Return a pointer to the unused 'File'.
-			/* Exercise 5.5: Your code here. (2/3) */
-
 			if (f->f_name[0] == '\0') {
 				return f;
 			}
@@ -240,13 +236,11 @@ struct File *create_file(struct File *dirf) {
 
 	// Step 2: If no unused file is found, allocate a new block using 'make_link_block' function
 	// and return a pointer to the new block on 'disk'.
-	/* Exercise 5.5: Your code here. (3/3) */
-
 	int bno = make_link_block(dirf, nblk);
 	return (struct File *)(disk[bno].data);
-
 	return NULL;
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Write file to disk under specified dir.
 void write_file(struct File *dirf, const char *path) {

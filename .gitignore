@@ -17,3 +17,4 @@ __pycache__
 *.pyc
 *.pyo
 .qemu_log
+.DS_Store

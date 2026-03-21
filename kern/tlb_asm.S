@@ -1,16 +1,14 @@
 #include <asm/asm.h>
 
+/* ----- MOS EXERCISE 2 tlb-out AFTER page-insert BEGIN ----- */
 LEAF(tlb_out)
 .set noreorder
 	mfc0    t0, CP0_ENTRYHI
 	mtc0    a0, CP0_ENTRYHI
 	nop
 	/* Step 1: Use 'tlbp' to probe TLB entry */
-	/* Exercise 2.8: Your code here. (1/2) */
-
-	tlbp
-
-	nop
+		tlbp
+		nop
 	/* Step 2: Fetch the probe result from CP0.Index */
 	mfc0    t1, CP0_INDEX
 .set reorder
@@ -21,17 +19,16 @@ LEAF(tlb_out)
 	mtc0    zero, CP0_ENTRYLO1
 	nop
 	/* Step 3: Use 'tlbwi' to write CP0.EntryHi/Lo into TLB at CP0.Index  */
-	/* Exercise 2.8: Your code here. (2/2) */
-
-	tlbwi
-
-.set reorder
+		tlbwi
+	.set reorder
 
 NO_SUCH_ENTRY:
 	mtc0    t0, CP0_ENTRYHI
 	j       ra
 END(tlb_out)
+/* ----- MOS EXERCISE END ----- */
 
+/* ----- MOS EXERCISE 2 do-tlb-refill AFTER c-do-tlb-refill BEGIN ----- */
 NESTED(do_tlb_refill, 24, zero)
 	mfc0    a1, CP0_BADVADDR
 	mfc0    a2, CP0_ENTRYHI
@@ -50,9 +47,7 @@ do_tlb_refill_call:
 	mtc0    a1, CP0_ENTRYLO1 /* Odd page table entry */
 	nop
 	/* Hint: use 'tlbwr' to write CP0.EntryHi/Lo into a random tlb entry. */
-	/* Exercise 2.10: Your code here. */
-
-	tlbwr
-
-	jr      ra
+		tlbwr
+		jr      ra
 END(do_tlb_refill)
+/* ----- MOS EXERCISE END ----- */

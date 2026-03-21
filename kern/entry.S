@@ -5,6 +5,7 @@
 tlb_miss_entry:
 	j       exc_gen_entry
 
+/* ----- MOS EXERCISE 3 exc-entry AFTER env-run BEGIN ----- */
 .section .text.exc_gen_entry
 exc_gen_entry:
 	SAVE_ALL
@@ -17,10 +18,8 @@ exc_gen_entry:
 	mfc0    t0, CP0_STATUS
 	and     t0, t0, ~(STATUS_UM | STATUS_EXL | STATUS_IE)
 	mtc0    t0, CP0_STATUS
-/* Exercise 3.9: Your code here. */
-
-	mfc0	t0, CP0_CAUSE
-	andi	t0, 0x7c
+	mfc0    t0, CP0_CAUSE
+	andi    t0, 0x7c
 	lw      t0, exception_handlers(t0)
-	jr		t0
-	
+	jr      t0
+/* ----- MOS EXERCISE END ----- */

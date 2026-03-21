@@ -6,7 +6,7 @@
 
 typedef void (*fmt_callback_t)(void *data, const char *buf, size_t len);
 
-/* Lab 1 Key Code "vprintfmt-overview" */
+/* ----- MOS KEY-CODE 1 vprintfmt-overview AFTER printk BEGIN ----- */
 /*
  * 'vprintfmt' is a formatting function that allows different backends (i.e., output sinks)
  * to be used for printing. It takes four arguments:
@@ -28,6 +28,6 @@ typedef void (*fmt_callback_t)(void *data, const char *buf, size_t len);
  * so the output sink should treat 'len' as the actual length of the buffer to print.
  */
 void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap);
-/* End of Key Code "vprintfmt-overview" */
+/* ----- MOS KEY-CODE END ----- */
 
 #endif

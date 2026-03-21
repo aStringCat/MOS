@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-/* Lab 1 Key Code "readelf-main" */
+	/* ----- MOS KEY-CODE 1 readelf-main AFTER readelf-struct-def BEGIN ----- */
 	FILE *fp = fopen(argv[1], "rb");
 	if (fp == NULL) {
 		perror(argv[1]);
@@ -42,12 +42,12 @@ int main(int argc, char *argv[]) {
 		perror("fseek");
 		goto err;
 	}
-	if (fread(p, fsize, 1, fp) < 0) {
+	if (fread(p, fsize, 1, fp) != 1) {
 		perror("fread");
 		goto err;
 	}
 	p[fsize] = 0;
-/* End of Key Code "readelf-main" */
+	/* ----- MOS KEY-CODE END ----- */
 
 	return readelf(p, fsize);
 err:

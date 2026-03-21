@@ -11,12 +11,11 @@ int block_is_free(u_int);
 // Overview:
 //  Return the virtual address of this disk block in cache.
 // Hint: Use 'DISKMAP' and 'BLOCK_SIZE' to calculate the address.
+/* ----- MOS EXERCISE 5 disk_addr AFTER create-file BEGIN ----- */
 void *disk_addr(u_int blockno) {
-	/* Exercise 5.6: Your code here. */
-
 	return (void *)(DISKMAP + blockno * BLOCK_SIZE);
-
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Overview:
 //  Check if this virtual address is mapped to a block. (check PTE_V bit)
@@ -134,21 +133,18 @@ int read_block(u_int blockno, void **blk, u_int *isnew) {
 	return 0;
 }
 
+/* ----- MOS EXERCISE 5 block-map AFTER disk_addr BEGIN ----- */
 // Overview:
 //  Allocate a page to cache the disk block.
 int map_block(u_int blockno) {
 	// Step 1: If the block is already mapped in cache, return 0.
 	// Hint: Use 'block_is_mapped'.
-	/* Exercise 5.7: Your code here. (1/5) */
-
 	if (block_is_mapped(blockno)) {
 		return 0;
 	}
 
 	// Step 2: Alloc a page in permission 'PTE_D' via syscall.
 	// Hint: Use 'disk_addr' for the virtual address.
-	/* Exercise 5.7: Your code here. (2/5) */
-
 	return syscall_mem_alloc(0, disk_addr(blockno), PTE_D);
 }
 
@@ -157,26 +153,21 @@ int map_block(u_int blockno) {
 void unmap_block(u_int blockno) {
 	// Step 1: Get the mapped address of the cache page of this block using 'block_is_mapped'.
 	void *va;
-	/* Exercise 5.7: Your code here. (3/5) */
-
 	va = block_is_mapped(blockno);
 
 	// Step 2: If this block is used (not free) and dirty in cache, write it back to the disk
 	// first.
 	// Hint: Use 'block_is_free', 'block_is_dirty' to check, and 'write_block' to sync.
-	/* Exercise 5.7: Your code here. (4/5) */
-
 	if (!block_is_free(blockno) && block_is_dirty(blockno)) {
 		write_block(blockno);
 	}
 
 	// Step 3: Unmap the virtual address via syscall.
-	/* Exercise 5.7: Your code here. (5/5) */
-
 	panic_on(syscall_mem_unmap(0, va));
 
 	user_assert(!block_is_mapped(blockno));
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Overview:
 //  Check if the block 'blockno' is free via bitmap.
@@ -197,21 +188,19 @@ int block_is_free(u_int blockno) {
 
 // Overview:
 //  Mark a block as free in the bitmap.
+/* ----- MOS EXERCISE 5 free-block AFTER ide-rw BEGIN ----- */
 void free_block(u_int blockno) {
 	// You can refer to the function 'block_is_free' above.
 	// Step 1: If 'blockno' is invalid (0 or >= the number of blocks in 'super'), return.
-	/* Exercise 5.4: Your code here. (1/2) */
-
 	if (blockno == 0 || blockno >= super->s_nblocks) {
 		return;
 	}
 
 	// Step 2: Set the flag bit of 'blockno' in 'bitmap'.
 	// Hint: Use bit operations to update the bitmap, such as b[n / W] |= 1 << (n % W).
-	/* Exercise 5.4: Your code here. (2/2) */
-
-	bitmap[blockno / 32] |= 1 << (blockno % 32);
+	bitmap[blockno / 32] |= 1 << (blockno & 0x1f);
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Overview:
 //  Search in the bitmap for a free block and allocate it.
@@ -504,21 +493,17 @@ int file_dirty(struct File *f, u_int offset) {
 // Post-Condition:
 //  Return 0 on success, and set the pointer to the target file in `*file`.
 //  Return the underlying error if an error occurs.
+/* ----- MOS EXERCISE 5 dir-lookup AFTER block-map BEGIN ----- */
 int dir_lookup(struct File *dir, char *name, struct File **file) {
 	// Step 1: Calculate the number of blocks in 'dir' via its size.
 	u_int nblock;
-	/* Exercise 5.8: Your code here. (1/3) */
-
 	nblock = dir->f_size / BLOCK_SIZE;
 
 	// Step 2: Iterate through all blocks in the directory.
 	for (int i = 0; i < nblock; i++) {
 		// Read the i'th block of 'dir' and get its address in 'blk' using 'file_get_block'.
 		void *blk;
-		/* Exercise 5.8: Your code here. (2/3) */
-
 		try(file_get_block(dir, i, &blk));
-
 		struct File *files = (struct File *)blk;
 
 		// Find the target among all 'File's in this block.
@@ -526,19 +511,17 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 			// Compare the file name against 'name' using 'strcmp'.
 			// If we find the target file, set '*file' to it and set up its 'f_dir'
 			// field.
-			/* Exercise 5.8: Your code here. (3/3) */
-
 			if (strcmp(name, f->f_name) == 0) {
 				*file = f;
 				f->f_dir = dir;
 				return 0;
 			}
-
 		}
 	}
 
 	return -E_NOT_FOUND;
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Overview:
 //  Alloc a new File structure under specified directory. Set *file

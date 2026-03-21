@@ -107,6 +107,7 @@ static int spawn_mapper(void *data, u_long va, size_t offset, u_int perm, const 
  *   coherence, which MOS has NOT implemented. This may result in unexpected behaviours on real
  *   CPUs! QEMU doesn't simulate caching, allowing the OS to function correctly.
  */
+/* ----- MOS EXERCISE 6 spawn AFTER dup-fix BEGIN ----- */
 int spawn(char *prog, char **argv) {
 	// Step 1: Open the file 'prog' (the path of the program).
 	// Return the error if 'open' fails.
@@ -121,8 +122,6 @@ int spawn(char *prog, char **argv) {
 	// set 'r' and 'goto err' to close the file and return the error.
 	int r;
 	u_char elfbuf[512];
-	/* Exercise 6.4: Your code here. (1/6) */
-
 	if ((r = readn(fd, elfbuf, sizeof(Elf32_Ehdr))) != sizeof(Elf32_Ehdr)) {
 		goto err;
 	}
@@ -137,8 +136,6 @@ int spawn(char *prog, char **argv) {
 	// Step 3: Create a child using 'syscall_exofork()' and store its envid in 'child'.
 	// If the syscall fails, set 'r' and 'goto err'.
 	u_int child;
-	/* Exercise 6.4: Your code here. (2/6) */
-
 	child = syscall_exofork();
 	if (child < 0) {
 		r = child;
@@ -148,8 +145,6 @@ int spawn(char *prog, char **argv) {
 	// Step 4: Use 'init_stack(child, argv, &sp)' to initialize the stack of the child.
 	// 'goto err1' if that fails.
 	u_int sp;
-	/* Exercise 6.4: Your code here. (3/6) */
-
 	if ((r = init_stack(child, argv, &sp))) {
 		goto err1;
 	}
@@ -162,23 +157,18 @@ int spawn(char *prog, char **argv) {
 		// 'ehdr->e_phentsize' into 'elfbuf'.
 		// 'goto err1' on failure.
 		// You may want to use 'seek' and 'readn'.
-		/* Exercise 6.4: Your code here. (4/6) */
-
 		if ((r = seek(fd, ph_off)) < 0) {
 			goto err1;
 		}
 		if ((r = readn(fd, elfbuf, ehdr->e_phentsize)) != ehdr->e_phentsize) {
 			goto err1;
 		}
-
 		Elf32_Phdr *ph = (Elf32_Phdr *)elfbuf;
 		if (ph->p_type == PT_LOAD) {
 			void *bin;
 			// Read and map the ELF data in the file at 'ph->p_offset' into our memory
 			// using 'read_map()'.
 			// 'goto err1' if that fails.
-			/* Exercise 6.4: Your code here. (5/6) */
-
 			r = read_map(fd, ph->p_offset, &bin);
 			if (r != 0) {
 				goto err1;
@@ -187,13 +177,10 @@ int spawn(char *prog, char **argv) {
 			// Load the segment 'ph' into the child's memory using 'elf_load_seg()'.
 			// Use 'spawn_mapper' as the callback, and '&child' as its data.
 			// 'goto err1' if that fails.
-			/* Exercise 6.4: Your code here. (6/6) */
-
 			r = elf_load_seg(ph, bin, spawn_mapper, &child);
 			if (r != 0) {
 				goto err1;
 			}
-
 		}
 	}
 	close(fd);
@@ -239,6 +226,7 @@ err:
 	close(fd);
 	return r;
 }
+/* ----- MOS EXERCISE END ----- */
 
 int spawnl(char *prog, char *args, ...) {
 	// Thanks to MIPS calling convention, the layout of arguments on the stack

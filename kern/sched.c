@@ -14,6 +14,7 @@
  *   2. Use variable 'env_sched_list', which contains and only contains all runnable envs.
  *   3. You shouldn't use any 'return' statement because this function is 'noreturn'.
  */
+/* ----- MOS EXERCISE 3 sched AFTER reset-kclock-macro BEGIN ----- */
 void schedule(int yield) {
 	static int count = 0; // remaining time slices of current env
 	struct Env *e = curenv;
@@ -34,8 +35,6 @@ void schedule(int yield) {
 	 * You may want to use macros below:
 	 *   'TAILQ_FIRST', 'TAILQ_REMOVE', 'TAILQ_INSERT_TAIL'
 	 */
-	/* Exercise 3.12: Your code here. */
-
 	if (yield || count == 0 || e == NULL || e->env_status != ENV_RUNNABLE) {
 		if (e != NULL && e->env_status == ENV_RUNNABLE) {
 			TAILQ_REMOVE(&env_sched_list, e, env_sched_link);
@@ -50,3 +49,4 @@ void schedule(int yield) {
 	count--;
 	env_run(e);
 }
+/* ----- MOS EXERCISE END ----- */

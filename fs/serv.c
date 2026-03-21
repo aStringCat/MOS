@@ -153,7 +153,7 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 	}
 
 	if ((rq->req_omode & O_CREAT) && (r = file_create(rq->req_path, &f)) < 0 &&
-		r != -E_FILE_EXISTS) {
+	    r != -E_FILE_EXISTS) {
 		ipc_send(envid, r, 0, 0);
 		return;
 	}
@@ -283,19 +283,16 @@ void serve_close(u_int envid, struct Fsreq_close *rq) {
  * Return:
  *  the result of the file_remove to the caller by ipc_send.
  */
+/* ----- MOS EXERCISE 5 serve-remove AFTER read BEGIN ----- */
 void serve_remove(u_int envid, struct Fsreq_remove *rq) {
 	// Step 1: Remove the file specified in 'rq' using 'file_remove' and store its return value.
 	int r;
-	/* Exercise 5.11: Your code here. (1/2) */
-
 	r = file_remove(rq->req_path);
 
 	// Step 2: Respond the return value to the caller 'envid' using 'ipc_send'.
-	/* Exercise 5.11: Your code here. (2/2) */
-
 	ipc_send(envid, r, 0, 0);
-
 }
+/* ----- MOS EXERCISE END ----- */
 
 /*
  * Overview:
@@ -344,9 +341,9 @@ void serve_sync(u_int envid) {
  * call the corresponding serve function.
  */
 void *serve_table[MAX_FSREQNO] = {
-	[FSREQ_OPEN] = serve_open,[FSREQ_MAP] = serve_map,[FSREQ_SET_SIZE] = serve_set_size,
-	[FSREQ_CLOSE] = serve_close,[FSREQ_DIRTY] = serve_dirty,[FSREQ_REMOVE] = serve_remove,
-	[FSREQ_SYNC] = serve_sync,
+    [FSREQ_OPEN] = serve_open,	 [FSREQ_MAP] = serve_map,     [FSREQ_SET_SIZE] = serve_set_size,
+    [FSREQ_CLOSE] = serve_close, [FSREQ_DIRTY] = serve_dirty, [FSREQ_REMOVE] = serve_remove,
+    [FSREQ_SYNC] = serve_sync,
 };
 
 /*

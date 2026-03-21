@@ -2,7 +2,7 @@
 #include <env.h>
 #include <pmap.h>
 
-/* Lab 2 Key Code "tlb_invalidate" */
+/* ----- MOS KEY-CODE 2 tlb_invalidate AFTER page_remove BEGIN ----- */
 /* Overview:
  *   Invalidate the TLB entry with specified 'asid' and virtual address 'va'.
  *
@@ -13,7 +13,7 @@
 void tlb_invalidate(u_int asid, u_long va) {
 	tlb_out((va & ~GENMASK(PGSHIFT, 0)) | (asid & (NASID - 1)));
 }
-/* End of Key Code "tlb_invalidate" */
+/* ----- MOS KEY-CODE END ----- */
 
 static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 	struct Page *p = NULL;
@@ -45,6 +45,7 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 /* Overview:
  *  Refill TLB.
  */
+/* ----- MOS EXERCISE 2 c-do-tlb-refill AFTER tlb-out BEGIN ----- */
 void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	tlb_invalidate(asid, va);
 	Pte *ppte;
@@ -56,8 +57,6 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	 *  allocate a new page using 'passive_alloc' until 'page_lookup' succeeds.
 	 */
 
-	/* Exercise 2.9: Your code here. */
-
 	while (page_lookup(cur_pgdir, va, &ppte) == NULL) {
 		passive_alloc(va, cur_pgdir, asid);
 	}
@@ -66,6 +65,7 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	pentrylo[0] = ppte[0] >> 6;
 	pentrylo[1] = ppte[1] >> 6;
 }
+/* ----- MOS EXERCISE END ----- */
 
 #if !defined(LAB) || LAB >= 4
 /* Overview:
@@ -79,6 +79,7 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
  *
  *   The user entry should handle this TLB Mod exception and restore the context.
  */
+/* ----- MOS EXERCISE 4 mod-handler AFTER duppage BEGIN ----- */
 void do_tlb_mod(struct Trapframe *tf) {
 	struct Trapframe tmp_tf = *tf;
 
@@ -93,11 +94,10 @@ void do_tlb_mod(struct Trapframe *tf) {
 		tf->regs[4] = tf->regs[29];
 		tf->regs[29] -= sizeof(tf->regs[4]);
 		// Hint: Set 'cp0_epc' in the context 'tf' to 'curenv->env_user_tlb_mod_entry'.
-		/* Exercise 4.11: Your code here. */
-		
 		tf->cp0_epc = curenv->env_user_tlb_mod_entry;
 	} else {
 		panic("TLB Mod but no user handler registered");
 	}
 }
+/* ----- MOS EXERCISE END ----- */
 #endif

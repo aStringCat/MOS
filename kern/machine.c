@@ -2,7 +2,7 @@
 #include <mmu.h>
 #include <printk.h>
 
-/* Lab 1 Key Code "printcharc" */
+/* ----- MOS KEY-CODE 1 printcharc AFTER outputk BEGIN ----- */
 /* Overview:
  *   Send a character to the console. If Transmitter Holding Register is currently occupied by
  *   some data, wait until the register becomes available.
@@ -18,7 +18,7 @@ void printcharc(char ch) {
 	}
 	*((volatile uint8_t *)(KSEG1 + MALTA_SERIAL_DATA)) = ch;
 }
-/* End of Key Code "printcharc" */
+/* ----- MOS KEY-CODE END ----- */
 
 /* Overview:
  *   Read a character from the console.

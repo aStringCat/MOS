@@ -11,12 +11,12 @@ static int file_stat(struct Fd *fd, struct Stat *stat);
 // Dot represents choosing the member within the struct declaration
 // to initialize, with no need to consider the order of members.
 struct Dev devfile = {
-	.dev_id = 'f',
-	.dev_name = "file",
-	.dev_read = file_read,
-	.dev_write = file_write,
-	.dev_close = file_close,
-	.dev_stat = file_stat,
+    .dev_id = 'f',
+    .dev_name = "file",
+    .dev_read = file_read,
+    .dev_write = file_write,
+    .dev_close = file_close,
+    .dev_stat = file_stat,
 };
 
 // Overview:
@@ -25,22 +25,19 @@ struct Dev devfile = {
 // Returns:
 //  the file descriptor on success,
 //  the underlying error on failure.
+/* ----- MOS EXERCISE 5 open AFTER dir-lookup BEGIN ----- */
 int open(const char *path, int mode) {
 	int r;
 
 	// Step 1: Alloc a new 'Fd' using 'fd_alloc' in fd.c.
 	// Hint: return the error code if failed.
 	struct Fd *fd;
-	/* Exercise 5.9: Your code here. (1/5) */
-
 	r = fd_alloc(&fd);
 	if (r) {
 		return r;
 	}
 
 	// Step 2: Prepare the 'fd' using 'fsipc_open' in fsipc.c.
-	/* Exercise 5.9: Your code here. (2/5) */
-
 	r = fsipc_open(path, mode, fd);
 	if (r) {
 		return r;
@@ -51,8 +48,6 @@ int open(const char *path, int mode) {
 	char *va;
 	struct Filefd *ffd;
 	u_int size, fileid;
-	/* Exercise 5.9: Your code here. (3/5) */
-
 	va = fd2data(fd);
 	ffd = (struct Filefd *)fd;
 	size = ffd->f_file.f_size;
@@ -60,21 +55,18 @@ int open(const char *path, int mode) {
 
 	// Step 4: Map the file content using 'fsipc_map'.
 	for (int i = 0; i < size; i += PTMAP) {
-		/* Exercise 5.9: Your code here. (4/5) */
-
 		r = fsipc_map(fileid, i, va + i);
 		if (r) {
 			return r;
 		}
-
 	}
 
 	// Step 5: Return the number of file descriptor using 'fd2num'.
-	/* Exercise 5.9: Your code here. (5/5) */
-
+	// if (mode & O_APPND)
+	// 	seek(fdnum, size);
 	return fd2num(fd);
-
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Overview:
 //  Close a file descriptor
@@ -265,13 +257,13 @@ int ftruncate(int fdnum, u_int size) {
 
 // Overview:
 //  Delete a file or directory.
+/* ----- MOS EXERCISE 5 remove AFTER fsipc-remove BEGIN ----- */
 int remove(const char *path) {
 	// Call fsipc_remove.
 
-	/* Exercise 5.13: Your code here. */
 	return fsipc_remove(path);
-
 }
+/* ----- MOS EXERCISE END ----- */
 
 // Overview:
 //  Synchronize disk with buffer cache

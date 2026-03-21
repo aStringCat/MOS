@@ -1,10 +1,10 @@
 #include <asm/asm.h>
 
+/* ----- MOS EXERCISE 4 msyscall BEGIN ----- */
 LEAF(msyscall)
 	// Just use 'syscall' instruction and return.
 
-	/* Exercise 4.1: Your code here. */
-	syscall
-
-	jr		ra
-END(msyscall)
+		syscall
+	jr      ra
+	END(msyscall)
+/* ----- MOS EXERCISE END ----- */

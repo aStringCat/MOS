@@ -51,7 +51,7 @@ typedef uint16_t Elf32_Section;
 /* Type of symbol indices.  */
 typedef uint32_t Elf32_Symndx;
 
-/* Lab 1 Key Code "readelf-struct-def" */
+/* ----- MOS KEY-CODE 1 readelf-struct-def BEGIN ----- */
 
 /* The ELF file header.  This appears at the start of every ELF file.  */
 
@@ -116,7 +116,7 @@ typedef struct {
 	Elf32_Word p_flags;  /* Segment flags */
 	Elf32_Word p_align;  /* Segment alignment */
 } Elf32_Phdr;
-/* End of Key Code "readelf-struct-def" */
+/* ----- MOS KEY-CODE END ----- */
 
 /* Legal values for p_type (segment type).  */
 

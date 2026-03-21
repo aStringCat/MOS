@@ -20,25 +20,25 @@ struct Page_list page_free_list; /* Free list of physical pages */
  *   Use '_memsize' from bootloader to initialize 'memsize' and
  *   calculate the corresponding 'npage' value.
  */
+/* ----- MOS EXERCISE 2 detect-mem BEGIN ----- */
 void mips_detect_memory(u_int _memsize) {
 	/* Step 1: Initialize memsize. */
 	memsize = _memsize;
 
 	/* Step 2: Calculate the corresponding 'npage' value. */
-	/* Exercise 2.1: Your code here. */
-
 	npage = memsize >> PGSHIFT;
 
 	printk("Memory size: %lu KiB, number of pages: %lu\n", memsize / 1024, npage);
 }
+/* ----- MOS EXERCISE END ----- */
 
-/* Lab 2 Key Code "alloc" */
+/* ----- MOS KEY-CODE 2 alloc BEGIN ----- */
 /* Overview:
-	Allocate `n` bytes physical memory with alignment `align`, if `clear` is set, clear the
-	allocated memory.
-	This allocator is used only while setting up virtual memory system.
+    Allocate `n` bytes physical memory with alignment `align`, if `clear` is set, clear the
+    allocated memory.
+    This allocator is used only while setting up virtual memory system.
    Post-Condition:
-	If we're out of memory, should panic, else return this address of memory we have allocated.*/
+    If we're out of memory, should panic, else return this address of memory we have allocated.*/
 void *alloc(u_int n, u_int align, int clear) {
 	extern char end[];
 	u_long alloced_mem;
@@ -69,12 +69,12 @@ void *alloc(u_int n, u_int align, int clear) {
 	/* Step 5: return allocated chunk. */
 	return (void *)alloced_mem;
 }
-/* End of Key Code "alloc" */
+/* ----- MOS KEY-CODE END ----- */
 
 /* Overview:
-	Set up two-level page table.
+    Set up two-level page table.
    Hint:
-	You can get more details about `UPAGES` and `UENVS` in include/mmu.h. */
+    You can get more details about `UPAGES` and `UENVS` in include/mmu.h. */
 void mips_vm_init() {
 	/* Allocate proper size of physical memory for global array `pages`,
 	 * for physical memory management. Then, map virtual address `UPAGES` to
@@ -91,36 +91,29 @@ void mips_vm_init() {
  *
  * Hint: Use 'LIST_INSERT_HEAD' to insert free pages to 'page_free_list'.
  */
+/* ----- MOS EXERCISE 2 page-init AFTER queue-macro BEGIN ----- */
 void page_init(void) {
 	/* Step 1: Initialize page_free_list. */
 	/* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
-	/* Exercise 2.3: Your code here. (1/4) */
-
 	LIST_INIT(&page_free_list);
 
 	/* Step 2: Align `freemem` up to multiple of PAGE_SIZE. */
-	/* Exercise 2.3: Your code here. (2/4) */
-
 	freemem = ROUND(freemem, PAGE_SIZE);
 
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
-	/* Exercise 2.3: Your code here. (3/4) */
-
-	u_long usedpage = PPN(PADDR(freemem));
-
-	for (u_long i = 0; i < usedpage; i++) {
+	int size = PADDR(freemem) / PAGE_SIZE;
+	int i;
+	for (i = 0; i < size; ++i) {
 		pages[i].pp_ref = 1;
 	}
 
 	/* Step 4: Mark the other memory as free. */
-	/* Exercise 2.3: Your code here. (4/4) */
-
-	for (u_long i = usedpage; i < npage; i++) {
+	for (i = size; i < npage; ++i) {
 		pages[i].pp_ref = 0;
-		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
+		LIST_INSERT_HEAD(&page_free_list, pages + i, pp_link);
 	}
-
 }
+/* ----- MOS EXERCISE END ----- */
 
 /* Overview:
  *   Allocate a physical page from free memory, and fill this page with zero.
@@ -135,11 +128,10 @@ void page_init(void) {
  *
  * Hint: Use LIST_FIRST and LIST_REMOVE defined in include/queue.h.
  */
+/* ----- MOS EXERCISE 2 page-alloc AFTER page-init BEGIN ----- */
 int page_alloc(struct Page **new) {
 	/* Step 1: Get a page from free memory. If fails, return the error code.*/
 	struct Page *pp;
-	/* Exercise 2.4: Your code here. (1/2) */
-
 	pp = LIST_FIRST(&page_free_list);
 	if (pp == NULL) {
 		return -E_NO_MEM;
@@ -149,13 +141,12 @@ int page_alloc(struct Page **new) {
 
 	/* Step 2: Initialize this page with zero.
 	 * Hint: use `memset`. */
-	/* Exercise 2.4: Your code here. (2/2) */
-
-	memset((void *)page2kva(pp), 0, PAGE_SIZE);
+	memset((void *)page2kva(pp), 0, PAGE_SIZE); // memset requests virtual address!!!!
 
 	*new = pp;
 	return 0;
 }
+/* ----- MOS EXERCISE END ----- */
 
 /* Overview:
  *   Release a page 'pp', mark it as free.
@@ -163,14 +154,13 @@ int page_alloc(struct Page **new) {
  * Pre-Condition:
  *   'pp->pp_ref' is '0'.
  */
+/* ----- MOS EXERCISE 2 page-free AFTER page-alloc BEGIN ----- */
 void page_free(struct Page *pp) {
 	assert(pp->pp_ref == 0);
 	/* Just insert it into 'page_free_list'. */
-	/* Exercise 2.5: Your code here. */
-
 	LIST_INSERT_HEAD(&page_free_list, pp, pp_link);
-
 }
+/* ----- MOS EXERCISE END ----- */
 
 /* Overview:
  *   Given 'pgdir', a pointer to a page directory, 'pgdir_walk' returns a pointer to
@@ -189,13 +179,12 @@ void page_free(struct Page *pp) {
  *   We use a two-level pointer to store page table entry and return a state code to indicate
  *   whether this function succeeds or not.
  */
+/* ----- MOS EXERCISE 2 pgdir-walk AFTER page-free BEGIN ----- */
 static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	Pde *pgdir_entryp;
 	struct Page *pp;
 
 	/* Step 1: Get the corresponding page directory entry. */
-	/* Exercise 2.6: Your code here. (1/3) */
-
 	pgdir_entryp = pgdir + PDX(va);
 
 	/* Step 2: If the corresponding page table is not existent (valid) then:
@@ -204,27 +193,24 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	 *     of memory), return the error.
 	 *   * Otherwise, assign NULL to '*ppte' and return 0.
 	 */
-	/* Exercise 2.6: Your code here. (2/3) */
-
-	if ((*pgdir_entryp & PTE_V) == 0) {
+	if (!((*pgdir_entryp) & PTE_V)) {
 		if (create) {
-			if (page_alloc(&pp) == -E_NO_MEM)
-				return -E_NO_MEM;
-			*pgdir_entryp = (page2pa(pp)) | PTE_C_CACHEABLE | PTE_V;
+			try(page_alloc(&pp));
+			*pgdir_entryp = page2pa(pp);
+			*pgdir_entryp = (*pgdir_entryp) | PTE_C_CACHEABLE | PTE_V;
 			pp->pp_ref++;
 		} else {
-			*ppte = NULL;
+			*ppte = 0;
 			return 0;
 		}
 	}
 
 	/* Step 3: Assign the kernel virtual address of the page table entry to '*ppte'. */
-	/* Exercise 2.6: Your code here. (3/3) */
-
-	*ppte = (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + PTX(va);
+	*ppte = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp)) + PTX(va);
 
 	return 0;
 }
+/* ----- MOS EXERCISE END ----- */
 
 /* Overview:
  *   Map the physical page 'pp' at virtual address 'va'. The permission (the low 12 bits) of the
@@ -238,6 +224,7 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
  *   If there is already a page mapped at `va`, call page_remove() to release this mapping.
  *   The `pp_ref` should be incremented if the insertion succeeds.
  */
+/* ----- MOS EXERCISE 2 page-insert AFTER pgdir-walk BEGIN ----- */
 int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) {
 	Pte *pte;
 
@@ -255,33 +242,27 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	}
 
 	/* Step 2: Flush TLB with 'tlb_invalidate'. */
-	/* Exercise 2.7: Your code here. (1/3) */
-
 	tlb_invalidate(asid, va);
 
 	/* Step 3: Re-get or create the page table entry. */
 	/* If failed to create, return the error. */
-	/* Exercise 2.7: Your code here. (2/3) */
-
-	if (pgdir_walk(pgdir, va, 1, &pte) == -E_NO_MEM)
-		return -E_NO_MEM;
+	try(pgdir_walk(pgdir, va, 1, &pte));
 
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_C_CACHEABLE | PTE_V'
 	 * and increase its 'pp_ref'. */
-	/* Exercise 2.7: Your code here. (3/3) */
-
-	*pte = (page2pa(pp)) | perm | PTE_C_CACHEABLE | PTE_V;
+	*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V;
 	pp->pp_ref++;
 
 	return 0;
 }
+/* ----- MOS EXERCISE END ----- */
 
-/* Lab 2 Key Code "page_lookup" */
+/* ----- MOS KEY-CODE 2 page_lookup AFTER alloc BEGIN ----- */
 /*Overview:
-	Look up the Page that virtual address `va` map to.
+    Look up the Page that virtual address `va` map to.
   Post-Condition:
-	Return a pointer to corresponding Page, and store it's page table entry to *ppte.
-	If `va` doesn't mapped to any Page, return NULL.*/
+    Return a pointer to corresponding Page, and store it's page table entry to *ppte.
+    If `va` doesn't mapped to any Page, return NULL.*/
 struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 	struct Page *pp;
 	Pte *pte;
@@ -303,7 +284,7 @@ struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 
 	return pp;
 }
-/* End of Key Code "page_lookup" */
+/* ----- MOS KEY-CODE END ----- */
 
 /* Overview:
  *   Decrease the 'pp_ref' value of Page 'pp'.
@@ -318,7 +299,7 @@ void page_decref(struct Page *pp) {
 	}
 }
 
-/* Lab 2 Key Code "page_remove" */
+/* ----- MOS KEY-CODE 2 page_remove AFTER page_lookup BEGIN ----- */
 // Overview:
 //   Unmap the physical page at virtual address 'va'.
 void page_remove(Pde *pgdir, u_int asid, u_long va) {
@@ -338,7 +319,7 @@ void page_remove(Pde *pgdir, u_int asid, u_long va) {
 	tlb_invalidate(asid, va);
 	return;
 }
-/* End of Key Code "page_remove" */
+/* ----- MOS KEY-CODE END ----- */
 
 void physical_memory_manage_check(void) {
 	struct Page *pp, *pp0, *pp1, *pp2;
@@ -397,7 +378,7 @@ void physical_memory_manage_check(void) {
 		// printk("0x%x  0x%x\n",&test_pages[i], test_pages[i].pp_link.le_next);
 	}
 	p = LIST_FIRST(&test_free);
-	int answer1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	int answer1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 	assert(p != NULL);
 	while (p != NULL) {
 		// printk("%d %d\n",p->pp_ref,answer1[j]);
@@ -406,7 +387,7 @@ void physical_memory_manage_check(void) {
 		p = LIST_NEXT(p, pp_link);
 	}
 	// insert_after test
-	int answer2[] = { 0, 1, 2, 3, 4, 20, 5, 6, 7, 8, 9 };
+	int answer2[] = {0, 1, 2, 3, 4, 20, 5, 6, 7, 8, 9};
 	q = (struct Page *)alloc(sizeof(struct Page), PAGE_SIZE, 1);
 	q->pp_ref = 20;
 

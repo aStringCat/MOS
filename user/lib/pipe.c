@@ -92,6 +92,7 @@ err:
  *   Use 'pageref' to get the reference count for
  *   the physical page mapped by the virtual page.
  */
+/* ----- MOS EXERCISE 6 pipe-impl BEGIN ----- */
 static int _pipe_is_closed(struct Fd *fd, struct Pipe *p) {
 	// The 'pageref(p)' is the total number of readers and writers.
 	// The 'pageref(fd)' is the number of envs with 'fd' open
@@ -106,8 +107,6 @@ static int _pipe_is_closed(struct Fd *fd, struct Pipe *p) {
 	// save them to 'fd_ref' and 'pipe_ref'.
 	// Keep retrying until 'env->env_runs' is unchanged before and after
 	// reading the reference counts.
-	/* Exercise 6.1: Your code here. (1/3) */
-
 	do {
 		runs = env->env_runs;
 		fd_ref = pageref(fd);
@@ -142,8 +141,6 @@ static int pipe_read(struct Fd *fd, void *vbuf, u_int n, u_int offset) {
 	//  - If at least 1 byte is read, or the pipe is closed, just return the number
 	//    of bytes read so far.
 	//  - Otherwise, keep yielding until the buffer isn't empty or the pipe is closed.
-	/* Exercise 6.1: Your code here. (2/3) */
-
 	p = (struct Pipe *)fd2data(fd);
 	rbuf = (char *)vbuf;
 	for (i = 0; i < n; ++i) {
@@ -157,8 +154,9 @@ static int pipe_read(struct Fd *fd, void *vbuf, u_int n, u_int offset) {
 		p->p_rpos++;
 	}
 	return n;
-
-	user_panic("pipe_read not implemented");
+	// ----- MOS UNCOMMENT BEGIN -----
+	// user_panic("pipe_read not implemented");
+	// ----- MOS UNCOMMENT END -----
 }
 
 /* Overview:
@@ -185,8 +183,6 @@ static int pipe_write(struct Fd *fd, const void *vbuf, u_int n, u_int offset) {
 	//  - If the pipe is closed, just return the number of bytes written so far.
 	//  - If the pipe isn't closed, keep yielding until the buffer isn't full or the
 	//    pipe is closed.
-	/* Exercise 6.1: Your code here. (3/3) */
-
 	p = (struct Pipe *)fd2data(fd);
 	wbuf = (char *)vbuf;
 	for (i = 0; i < n; ++i) {
@@ -199,11 +195,13 @@ static int pipe_write(struct Fd *fd, const void *vbuf, u_int n, u_int offset) {
 		p->p_buf[p->p_wpos % PIPE_SIZE] = wbuf[i];
 		p->p_wpos++;
 	}
-
-	//user_panic("pipe_write not implemented");
+	// ----- MOS UNCOMMENT BEGIN -----
+	// user_panic("pipe_write not implemented");
+	// ----- MOS UNCOMMENT END -----
 
 	return n;
 }
+/* ----- MOS EXERCISE END ----- */
 
 /* Overview:
  *   Check if the pipe referred by 'fdnum' is closed.
@@ -240,12 +238,18 @@ int pipe_is_closed(int fdnum) {
  * Hint:
  *   Use 'syscall_mem_unmap' to unmap the pages.
  */
+/* ----- MOS EXERCISE 6 pipe-race AFTER pipe-impl BEGIN ----- */
 static int pipe_close(struct Fd *fd) {
 	// Unmap 'fd' and the referred Pipe.
+	// ----- MOS BLANK BEGIN ----- quiet
 	syscall_mem_unmap(0, fd);
 	syscall_mem_unmap(0, (void *)fd2data(fd));
+	// ----- MOS UNCOMMENT BEGIN -----
+	// syscall_mem_unmap(0, fd);
+	// ----- MOS UNCOMMENT END -----
 	return 0;
 }
+/* ----- MOS EXERCISE END ----- */
 
 static int pipe_stat(struct Fd *fd, struct Stat *stat) {
 	return 0;

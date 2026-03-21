@@ -65,6 +65,7 @@ int gettoken(char *s, char **p1) {
 
 #define MAXARGS 128
 
+/* ----- MOS EXERCISE 6 parsecmd AFTER spawn BEGIN ----- */
 int parsecmd(char **argv, int *rightpipe) {
 	int argc = 0;
 	while (1) {
@@ -90,8 +91,6 @@ int parsecmd(char **argv, int *rightpipe) {
 			// If the 'open' function encounters an error,
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
-			/* Exercise 6.5: Your code here. (1/3) */
-
 			fd = open(t, O_RDONLY);
 			if (fd < 0) {
 				debugf("failed to open '%s'\n", t);
@@ -99,8 +98,9 @@ int parsecmd(char **argv, int *rightpipe) {
 			}
 			dup(fd, 0);
 			close(fd);
-
-			//user_panic("< redirection not implemented");
+			// ----- MOS UNCOMMENT BEGIN -----
+			// user_panic("< redirection not implemented");
+			// ----- MOS UNCOMMENT END -----
 
 			break;
 		case '>':
@@ -113,8 +113,6 @@ int parsecmd(char **argv, int *rightpipe) {
 			// If the 'open' function encounters an error,
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
-			/* Exercise 6.5: Your code here. (2/3) */
-
 			fd = open(t, O_WRONLY | O_CREAT | O_TRUNC);
 			if (fd < 0) {
 				debugf("failed to open '%s'\n", t);
@@ -122,8 +120,9 @@ int parsecmd(char **argv, int *rightpipe) {
 			}
 			dup(fd, 1);
 			close(fd);
-
+			// ----- MOS UNCOMMENT BEGIN -----
 			// user_panic("> redirection not implemented");
+			// ----- MOS UNCOMMENT END -----
 
 			break;
 		case '|':;
@@ -143,8 +142,6 @@ int parsecmd(char **argv, int *rightpipe) {
 			 * - and 'return argc', to execute the left of the pipeline.
 			 */
 			int p[2];
-			/* Exercise 6.5: Your code here. (3/3) */
-
 			r = pipe(p);
 			if (r != 0) {
 				debugf("pipe: %d\n", r);
@@ -167,8 +164,9 @@ int parsecmd(char **argv, int *rightpipe) {
 				close(p[0]);
 				return argc;
 			}
-			
+			// ----- MOS UNCOMMENT BEGIN -----
 			// user_panic("| not implemented");
+			// ----- MOS UNCOMMENT END -----
 
 			break;
 		}
@@ -176,6 +174,7 @@ int parsecmd(char **argv, int *rightpipe) {
 
 	return argc;
 }
+/* ----- MOS EXERCISE END ----- */
 
 void runcmd(char *s) {
 	gettoken(s, 0);
